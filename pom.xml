@@ -10,6 +10,7 @@
         <module>domain</module>
         <module>data</module>
         <module>api</module>
+        <module>frontend</module>
     </modules>
 
     <properties>
