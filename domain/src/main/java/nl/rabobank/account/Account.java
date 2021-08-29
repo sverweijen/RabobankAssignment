@@ -1,7 +1,6 @@
 package nl.rabobank.account;
 
-public interface Account
-{
+public interface Account {
     String getAccountNumber();
     String getAccountHolderName();
     Double getBalance();
