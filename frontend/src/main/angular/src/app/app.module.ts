@@ -19,6 +19,7 @@ import {CreateComponent} from './power-of-attorney/create/create.component';
 import {SearchComponent} from './power-of-attorney/search/search.component';
 import {MatTableModule} from "@angular/material/table";
 import {FlexModule} from "@angular/flex-layout";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 
 @NgModule({
   declarations: [
@@ -43,6 +44,7 @@ import {FlexModule} from "@angular/flex-layout";
     MatCardModule,
     MatTabsModule,
     MatTableModule,
+    MatSnackBarModule,
     FlexModule
   ],
   providers: [

@@ -26,7 +26,8 @@
   </mat-card-actions>
 
   <div *ngIf="dataSource">
-    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+    <table mat-table *ngIf="dataSource.length > 0"
+           [dataSource]="dataSource" class="mat-elevation-z8">
 
       <!-- Holder Column -->
       <ng-container matColumnDef="holder">

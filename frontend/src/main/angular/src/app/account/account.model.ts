@@ -1,9 +1,9 @@
 export interface Account {
   id: string;
-  accountNumber: string
+  accountNumber: string;
   accountHolderName: string;
   balance: number;
-  accountType: AccountType
+  accountType: AccountType;
 }
 
 export enum AccountType {

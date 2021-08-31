@@ -31,8 +31,11 @@ export class CreateComponent implements OnInit {
       const powerOfAttorney: PowerOfAttorney = this.powerOfAttorney.getRawValue();
       this.powerOfAttorneyResource.createPowerOfAttorney(powerOfAttorney)
         .subscribe({
-          next: poa => console.log("poa: ", poa),
-          error: err => console.error(err)
+          next: () => {
+            this.powerOfAttorneyService.openSnackBar('Power of Attorney successfully created', 'OK');
+            this.powerOfAttorney.reset();
+          },
+          error: () => this.powerOfAttorneyService.openSnackBar('BAD REQUEST: Grantor name does not match account holder', 'OK')
         });
     }
     this.powerOfAttorneyService.validateAllFormFields(this.powerOfAttorney);

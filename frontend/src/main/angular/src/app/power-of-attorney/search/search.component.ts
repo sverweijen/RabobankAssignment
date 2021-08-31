@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Authorization, PowerOfAttorneyResponse} from "../power-of-attorney.model";
 import {PowerOfAttorneyResource} from "../power-of-attorney.resource";
@@ -11,9 +11,8 @@ import {PowerOfAttorneyService} from "../power-of-attorney.service";
 })
 export class SearchComponent implements OnInit {
 
-  displayedColumns: string[] = ['holder', 'balance', 'type', 'authorization'];
-  dataSource?: PowerOfAttorneyResponse[];
-
+  public displayedColumns: string[] = ['holder', 'balance', 'type', 'authorization'];
+  public dataSource?: PowerOfAttorneyResponse[];
   public powerOfAttorney = new FormGroup({
     granteeName: new FormControl('', Validators.required),
     authorization: new FormControl(''),
@@ -32,9 +31,11 @@ export class SearchComponent implements OnInit {
     if (this.powerOfAttorney.valid) {
       const powerOfAttorney = this.powerOfAttorney.getRawValue();
       this.powerOfAttorneyResource.getPowerOfAttorneysByFilter(powerOfAttorney.granteeName, powerOfAttorney.authorization)
-        .subscribe({
-          next: poa => this.dataSource = poa,
-          error: err => console.error(err)
+        .subscribe(poa => {
+          this.dataSource = poa;
+          if (this.dataSource.length === 0) {
+            this.powerOfAttorneyService.openSnackBar('There are no Power of Attoneys that match this query', 'OK');
+          }
         });
     }
     this.powerOfAttorneyService.validateAllFormFields(this.powerOfAttorney);

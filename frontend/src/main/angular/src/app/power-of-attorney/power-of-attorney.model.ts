@@ -9,9 +9,9 @@ export interface PowerOfAttorney {
 
 export interface PowerOfAttorneyResponse {
   id: string;
-  granteeName: string
+  granteeName: string;
   grantorName: string;
-  authorization: Authorization
+  authorization: Authorization;
   account: Account;
 }
 
