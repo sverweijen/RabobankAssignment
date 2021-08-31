@@ -7,10 +7,8 @@ import nl.rabobank.mongo.MongoConfiguration;
 
 @SpringBootApplication
 @Import(MongoConfiguration.class)
-public class RaboAssignmentApplication
-{
-    public static void main(final String[] args)
-    {
+public class RaboAssignmentApplication {
+    public static void main(final String[] args) {
         SpringApplication.run(RaboAssignmentApplication.class, args);
     }
 }
