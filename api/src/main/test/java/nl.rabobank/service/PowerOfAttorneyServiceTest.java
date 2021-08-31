@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -67,73 +68,107 @@ public class PowerOfAttorneyServiceTest {
 
   @Test
   void createPowerOfAttorney() {
-    when(accountRepository.findByAccountNumber(anyString()))
-        .thenReturn(Optional.of(accountDoc));
-    when(powerOfAttorneyMapper.mapToPowerOfAttorney(any(PowerOfAttorneyRequest.class), any(AccountDoc.class)))
-            .thenReturn(powerOfAttorneyDoc);
+    when(accountRepository.findByAccountNumber(anyString())).thenReturn(Optional.of(accountDoc));
+    when(powerOfAttorneyRepository.findByAccountAndGranteeNameAndAuthorization(
+            any(AccountDoc.class), anyString(), any(Authorization.class)))
+            .thenReturn(Optional.empty());
+    when(powerOfAttorneyMapper.mapToPowerOfAttorney(
+            any(PowerOfAttorneyRequest.class), any(AccountDoc.class)))
+        .thenReturn(powerOfAttorneyDoc);
     when(powerOfAttorneyRepository.save(any(PowerOfAttorneyDoc.class)))
-            .thenReturn(powerOfAttorneyDoc);
+        .thenReturn(powerOfAttorneyDoc);
 
     PowerOfAttorneyDoc result =
         powerOfAttorneyService.createPowerOfAttorney(powerOfAttorneyRequest);
 
     assertNotNull(result);
     verify(accountRepository).findByAccountNumber(anyString());
-    verify(powerOfAttorneyMapper).mapToPowerOfAttorney(any(PowerOfAttorneyRequest.class), any(AccountDoc.class));
+    verify(powerOfAttorneyRepository)
+            .findByAccountAndGranteeNameAndAuthorization(
+                    any(AccountDoc.class), anyString(), any(Authorization.class));
+    verify(powerOfAttorneyMapper)
+        .mapToPowerOfAttorney(any(PowerOfAttorneyRequest.class), any(AccountDoc.class));
     verify(powerOfAttorneyRepository).save(any(PowerOfAttorneyDoc.class));
   }
 
   @Test
   void createPowerOfAttorney_accountIdEmpty() {
-    when(accountRepository.findByAccountNumber(anyString()))
-            .thenReturn(Optional.empty());
+    when(accountRepository.findByAccountNumber(anyString())).thenReturn(Optional.empty());
     ResponseStatusException exception =
-            assertThrows(
-                    ResponseStatusException.class,
-                    () -> powerOfAttorneyService.createPowerOfAttorney(powerOfAttorneyRequest));
+        assertThrows(
+            ResponseStatusException.class,
+            () -> powerOfAttorneyService.createPowerOfAttorney(powerOfAttorneyRequest));
 
     String expectedMessage = "Account does not exist";
     String actualMessage = exception.getMessage();
     assertTrue(actualMessage.contains(expectedMessage));
+    assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+
     verify(accountRepository).findByAccountNumber(anyString());
   }
 
   @Test
   void createPowerOfAttorney_accountHolderDoesNotMatch() {
     accountDoc.setAccountHolderName("grantor_1");
-    when(accountRepository.findByAccountNumber(anyString()))
-            .thenReturn(Optional.of(accountDoc));
+    when(accountRepository.findByAccountNumber(anyString())).thenReturn(Optional.of(accountDoc));
 
     ResponseStatusException exception =
-            assertThrows(
-                    ResponseStatusException.class,
-                    () -> powerOfAttorneyService.createPowerOfAttorney(powerOfAttorneyRequest));
+        assertThrows(
+            ResponseStatusException.class,
+            () -> powerOfAttorneyService.createPowerOfAttorney(powerOfAttorneyRequest));
 
     String expectedMessage = "holder_1 is not the account holder";
     String actualMessage = exception.getMessage();
     assertTrue(actualMessage.contains(expectedMessage));
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+
     verify(accountRepository).findByAccountNumber(anyString());
   }
 
   @Test
+  void createPowerOfAttorney_PowerOfAttorneyAlreadyExists() {
+    when(accountRepository.findByAccountNumber(anyString())).thenReturn(Optional.of(accountDoc));
+    when(powerOfAttorneyRepository.findByAccountAndGranteeNameAndAuthorization(
+            any(AccountDoc.class), anyString(), any(Authorization.class)))
+        .thenReturn(Optional.of(powerOfAttorneyDoc));
+
+    ResponseStatusException exception =
+        assertThrows(
+            ResponseStatusException.class,
+            () -> powerOfAttorneyService.createPowerOfAttorney(powerOfAttorneyRequest));
+
+    String expectedMessage = "Power of Attorney already exists";
+    String actualMessage = exception.getMessage();
+    assertTrue(actualMessage.contains(expectedMessage));
+    assertEquals(HttpStatus.CONFLICT, exception.getStatus());
+
+    verify(accountRepository).findByAccountNumber(anyString());
+    verify(powerOfAttorneyRepository)
+        .findByAccountAndGranteeNameAndAuthorization(
+            any(AccountDoc.class), anyString(), any(Authorization.class));
+  }
+
+  @Test
   void getPowerOfAttorneysByFilter() {
-    when(powerOfAttorneyRepository.findByGranteeNameAndAuthorization(anyString(), any(Authorization.class)))
-            .thenReturn(powerOfAttorneyDocs);
+    when(powerOfAttorneyRepository.findByGranteeNameAndAuthorization(
+            anyString(), any(Authorization.class)))
+        .thenReturn(powerOfAttorneyDocs);
 
     List<PowerOfAttorneyDoc> result =
-            powerOfAttorneyService.getPowerOfAttorneysByFilter(grantee, Optional.of(Authorization.READ));
+        powerOfAttorneyService.getPowerOfAttorneysByFilter(
+            grantee, Optional.of(Authorization.READ));
 
     assertNotNull(result);
-    verify(powerOfAttorneyRepository).findByGranteeNameAndAuthorization(anyString(), any(Authorization.class));
+    verify(powerOfAttorneyRepository)
+        .findByGranteeNameAndAuthorization(anyString(), any(Authorization.class));
   }
 
   @Test
   void getPowerOfAttorneysByFilter_authorizationIsEmpty() {
-    when(powerOfAttorneyRepository.findByGranteeName(anyString()))
-            .thenReturn(powerOfAttorneyDocs);
+    when(powerOfAttorneyRepository.findByGranteeName(anyString())).thenReturn(powerOfAttorneyDocs);
 
     List<PowerOfAttorneyDoc> result =
-            powerOfAttorneyService.getPowerOfAttorneysByFilter(grantee, Optional.empty());
+        powerOfAttorneyService.getPowerOfAttorneysByFilter(grantee, Optional.empty());
 
     assertNotNull(result);
     verify(powerOfAttorneyRepository).findByGranteeName(anyString());

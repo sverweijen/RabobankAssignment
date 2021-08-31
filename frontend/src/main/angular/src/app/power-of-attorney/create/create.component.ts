@@ -35,7 +35,9 @@ export class CreateComponent implements OnInit {
             this.powerOfAttorneyService.openSnackBar('Power of Attorney successfully created', 'OK');
             this.powerOfAttorney.reset();
           },
-          error: () => this.powerOfAttorneyService.openSnackBar('BAD REQUEST: Grantor name does not match account holder', 'OK')
+          error: err => {
+            this.powerOfAttorneyService.openSnackBar(`Error: ${err.error.message}`, 'OK')
+          }
         });
     }
     this.powerOfAttorneyService.validateAllFormFields(this.powerOfAttorney);

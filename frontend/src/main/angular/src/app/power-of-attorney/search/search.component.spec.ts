@@ -24,7 +24,7 @@ describe('SearchComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('searchPowerOfAttorney', done => {
+  it('searchPowerOfAttorney', (done: DoneFn) => {
     const powerOfAttorney: PowerOfAttorneyResponse = {
       id: "1",
       authorization: Authorization.READ,
@@ -47,7 +47,7 @@ describe('SearchComponent', () => {
       done();
     });
   });
-  it('searchPowerOfAttorney no data', done => {
+  it('searchPowerOfAttorney no data', (done: DoneFn) => {
     powerOfAttorneyResourceSpy.getPowerOfAttorneysByFilter.and.returnValue(of([]));
     component.searchPowerOfAttorney();
     powerOfAttorneyResourceSpy.getPowerOfAttorneysByFilter('Grantee', Authorization.READ).subscribe((poas: PowerOfAttorneyResponse[]) => {

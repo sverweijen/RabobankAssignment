@@ -36,10 +36,23 @@ public class PowerOfAttorneyService {
           HttpStatus.BAD_REQUEST,
           powerOfAttorneyRequest.getGrantorName() + " is not the account holder");
     }
+    checkIfPowerOfAttorneyExists(powerOfAttorneyRequest, account.get());
 
     PowerOfAttorneyDoc powerOfAttorneyDoc =
         powerOfAttorneyMapper.mapToPowerOfAttorney(powerOfAttorneyRequest, account.get());
     return powerOfAttorneyRepository.save(powerOfAttorneyDoc);
+  }
+
+  private void checkIfPowerOfAttorneyExists(PowerOfAttorneyRequest powerOfAttorneyRequest, AccountDoc account) {
+    Optional<PowerOfAttorneyDoc> doc = powerOfAttorneyRepository.findByAccountAndGranteeNameAndAuthorization(
+            account,
+            powerOfAttorneyRequest.getGranteeName(),
+            powerOfAttorneyRequest.getAuthorization()
+    );
+    if (doc.isPresent()) {
+      throw new ResponseStatusException(
+              HttpStatus.CONFLICT, "Power of Attorney already exists");
+    }
   }
 
   public List<PowerOfAttorneyDoc> getPowerOfAttorneysByFilter(

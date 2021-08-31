@@ -20,7 +20,7 @@ describe('CreateComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('createPowerOfAttorney', done => {
+  it('createPowerOfAttorney', (done: DoneFn) => {
     component.powerOfAttorney = new FormGroup({
       accountNumber: new FormControl('fake_accountNumber', Validators.required),
       granteeName: new FormControl('Grantee_1', Validators.required),
@@ -59,15 +59,25 @@ describe('CreateComponent', () => {
     expect(powerOfAttorneyServiceSpy.validateAllFormFields).toHaveBeenCalledWith(component.powerOfAttorney);
   });
 
-  it('createPowerOfAttorney BAD REQUEST', () => {
+  it('createPowerOfAttorney BAD REQUEST', (done: DoneFn) => {
     component.powerOfAttorney = new FormGroup({
       accountNumber: new FormControl('fake_accountNumber', Validators.required),
       granteeName: new FormControl('Grantee_1', Validators.required),
       grantorName: new FormControl('Holder_1', Validators.required),
       authorization: new FormControl(Authorization.READ, Validators.required),
     });
-    powerOfAttorneyResourceSpy.createPowerOfAttorney.and.returnValue(throwError('error'));
+    const error = {
+      status: 409,
+      error: "Conflict",
+      message: "Power of Attorney already exists"
+    };
+    powerOfAttorneyResourceSpy.createPowerOfAttorney.and.returnValue(throwError(error));
     component.createPowerOfAttorney();
-    expect(powerOfAttorneyServiceSpy.openSnackBar).toHaveBeenCalledWith('BAD REQUEST: Grantor name does not match account holder', 'OK');
+    powerOfAttorneyResourceSpy.createPowerOfAttorney(component.powerOfAttorney.getRawValue()).subscribe({
+      error: (err: any) => {
+        expect(powerOfAttorneyServiceSpy.openSnackBar).toHaveBeenCalledWith(`Error: ${err.error.message}`, 'OK');
+        done();
+      }
+    });
   });
 });
